@@ -1,0 +1,4 @@
+class vcar {
+public:
+    vcar();
+};
