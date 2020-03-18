@@ -1,7 +1,8 @@
 #include <time.h>
 #include <stdio.h>
 #include <string>
-
+#include <iostream>
+#include <fstream>
 
 #define LOGFILE "virtualcar.log"     // all Log(); messages will be appended to this file
 
@@ -17,20 +18,16 @@ int Log (std::string str, ...)
   time(&rawtime);
   timeinfo = localtime(&rawtime);
 
-  FILE * fp = fopen(LOGFILE, "a");
+  std::ofstream logFile;
+  logFile.open(LOGFILE);
 
-  if (fp == NULL)
+  if (logFile.fail())
     return -1;
 
-  fprintf(fp, "\n[%i/%i/%i %i:%i:%i] LOG: %s", 
-        timeinfo->tm_mday, 
-        timeinfo->tm_mon + 1, 
-        timeinfo->tm_year + 1900, 
-        timeinfo->tm_hour + 2, 
-        timeinfo->tm_min, 
-        timeinfo->tm_sec, str);
+  logFile << "\n[" << timeinfo->tm_mday << "/" << timeinfo->tm_mon + 1 << "/" << timeinfo->tm_year + 1900 << " "
+    << timeinfo->tm_hour + 2 << ":" << timeinfo->tm_min << ":" << timeinfo->tm_sec << "] LOG: " << str;
 
-  fclose(fp);
+  logFile.close();
 
   return 1;
 }
