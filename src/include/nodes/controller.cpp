@@ -20,6 +20,8 @@
 /** nodes header */
 #include "door.h"
 #include "pump.h"
+
+#include "controller.h"
  
 struct can_frame *current;
 
