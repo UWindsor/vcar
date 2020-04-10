@@ -1,6 +1,6 @@
 #include <pthread.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -11,14 +11,17 @@
 
 #include <lib.h>
 
+#define VCAR_NAME "vcar"
+
 class vcar {
     int sock;
     struct ifreq ifr;
     struct sockaddr_can addr;
     struct canfd_frame frame;
-    bool enable_canfd = true;
+    int enable_canfd = 1;
     int required_mtu;
 
 public:
     vcar();
+    int sendCanFrame(char* sFrame);
 };

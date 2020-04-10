@@ -38,7 +38,7 @@
  * Log message to a logfile
  * 
  */
-int Log (char *str, ...)
+int Log (char const* str, ...)
 {
 	time_t rawtime;
 	struct tm * timeinfo;
