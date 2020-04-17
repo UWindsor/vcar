@@ -63,20 +63,26 @@ int main() {
         /* CAN frame is populated, do what you will */
         
         // Print out CAN frame data
-        std::cout << "RECEIVED: " << strlen((const char*)frame.data) << std::endl;
+        std::stringstream can_id;
+        can_id << std::hex << static_cast<int>(frame.can_id);
+
+        std::cout << "ID: " << can_id.str() << std::endl;
+        std::cout << "DATA: ";
         for (int i = 0; i < frame.can_dlc; i++) {
-            std::cout << std::hex << static_cast<int>(frame.data[i]) << ".";
+            std::cout << std::hex << static_cast<int>(frame.data[i]);
         }
         std::cout << std::endl;
         
         /*
              Check if frame belongs to self and work accordingly
         */
-        std::stringstream cmd;
-        cmd << "cansend vcar 5A1#";
-        for (int i = 0; i < frame.can_dlc; i++)
-            cmd << std::hex << static_cast<int>(frame.data[i]);
-        if (frame.data[0] == 0x00) {
+        if (frame.can_id == 0) {
+            /*
+            std::stringstream cmd;
+            cmd << "cansend vcar 5A1#";
+            for (int i = 0; i < frame.can_dlc; i++)
+                cmd << std::hex << static_cast<int>(frame.data[i]);
+            */
             std::cout << "This frame belongs to me!" << std::endl;
             //system(cmd.str().c_str());
         }
