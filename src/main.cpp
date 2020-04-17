@@ -3,9 +3,12 @@
     
     use something like `cansend vcar 5A1#48656c6f` to send data onto the
     can bus. cansend documentation is helpful.
+
+    ONLY LISTENS TO CAN FRAMES BEGINNING WITH 0x00 
 */
 
 #include <iostream>
+#include <sstream>
 #include <vcar.h>
 
 #include <linux/can.h>
@@ -61,13 +64,22 @@ int main() {
         
         // Print out CAN frame data
         std::cout << "RECEIVED: " << strlen((const char*)frame.data) << std::endl;
-        
-        
         for (int i = 0; i < frame.can_dlc; i++) {
-            std::cout << std::hex << static_cast<int>(frame.data[i]) << " ";
+            std::cout << std::hex << static_cast<int>(frame.data[i]) << ".";
         }
         std::cout << std::endl;
-
+        
+        /*
+             Check if frame belongs to self and work accordingly
+        */
+        std::stringstream cmd;
+        cmd << "cansend vcar 5A1#";
+        for (int i = 0; i < frame.can_dlc; i++)
+            cmd << std::hex << static_cast<int>(frame.data[i]);
+        if (frame.data[0] == 0x00) {
+            std::cout << "This frame belongs to me!" << std::endl;
+            //system(cmd.str().c_str());
+        }
     }
 
     return 0;
