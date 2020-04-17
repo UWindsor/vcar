@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route('/', methods=['POST'])
 def send_can_message():
-  frame = request.get_json()['frame']
+  frame = request.form['frame']
   cmd = "cansend vcar " + frame
 
   exit = os.system(cmd)
@@ -18,3 +18,4 @@ def send_can_message():
       'exit_message': exit
     }
   )
+  
