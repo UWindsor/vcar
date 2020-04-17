@@ -6,10 +6,12 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
-#include <linux/can.h>
-#include <linux/can/raw.h>
+extern "C" {
+    #include <linux/can.h>
+    #include <linux/can/raw.h>
 
-#include <lib.h>
+    #include <lib.h>
+}
 
 #define VCAR_NAME "vcar"
 
