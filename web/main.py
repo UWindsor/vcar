@@ -5,11 +5,11 @@ import os
 app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'GET':
-        return render_template('index.html')
-        
-    frame = request.get_json()['frame']
+def send_can_message():
+  if request.method == 'GET':
+    return render_template('index.html')
+  else:
+    frame = request.form['frame']
     cmd = "cansend vcar " + frame
 
     exit = os.system(cmd)
