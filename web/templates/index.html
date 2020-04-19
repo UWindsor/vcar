@@ -1,17 +1,34 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>vcar web</title>
-</head>
+    <head>
+        <title>vcar web</title>
+        <script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+    </head>
 
-<body>
-  <h1> vCar Web </h1>
-  <form method="POST" action="http://localhost:5000/">
-    <h4> Can Frame: </h4>
-    <br>
-    <input type="text" placeholder="5A1#1122334455667788" name="frame"/>
-    <br>
-    <button type="submit">send</button>
-  </form>
-</body>
+    <body>
+        <h1> vCar Web </h1>
+        <h4> Can Frame: </h4>
+        <br>
+        <input id="can_input" type="text" placeholder="000#1122334455667788" name="frame"/>
+        <br>
+        <button id="send_frame_btn" type="button">send</button>
+    </body>
 </html>
+
+<script>
+    $(document).ready(function() {
+        $("#send_frame_btn").on('click', function() {
+            console.log('click: '+$('#can_input').val())
+            $.ajax({
+                url: "http://localhost:5000",
+                method: "post",
+                crossDomain: true,
+                data: { frame: $("#can_input").val() },
+            }).done(function(res) {
+                console.log(res);
+            }).fail(function(err) {
+                console.log(err);
+            })
+        })
+    });
+</script>
