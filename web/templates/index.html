@@ -12,20 +12,28 @@
         <input id="can_input" type="text" placeholder="000#1122334455667788" name="frame"/>
         <br>
         <button id="send_frame_btn" type="button">send</button>
+        <br>
+        <div style="max-height: 300px; border:1px solid black; margin: 20px; padding: 5px; overflow: hidden" id="logger">
+            
+        <div/>
     </body>
 </html>
 
 <script>
     $(document).ready(function() {
+        let line = 0;
         $("#send_frame_btn").on('click', function() {
-            console.log('click: '+$('#can_input').val())
+            let input = $('#can_input').val();
             $.ajax({
                 url: "http://localhost:5000",
                 method: "post",
                 crossDomain: true,
-                data: { frame: $("#can_input").val() },
+                data: { frame: input },
             }).done(function(res) {
-                console.log(res);
+                res = JSON.parse(res);
+                feedback = {success: res.success, exit_code: res.exit_message, input: input}
+                $("#logger").prepend("<b>"+line+") "+JSON.stringify(feedback, null, 4)+"</b><br>");
+                line++;
             }).fail(function(err) {
                 console.log(err);
             })
