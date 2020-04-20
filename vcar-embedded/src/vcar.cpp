@@ -81,13 +81,11 @@ int vcar::sendCanFrame(char* sFrame) {
         return 0;
     }
 
-    close(sock);
-
     return 1;
 }
 
 int vcar::recvCanFrame() {
-    struct can_frame in_frame {};
+    struct can_frame in_frame = make_can_frame();
 
     int nbytes = read(sock, &in_frame, sizeof(struct can_frame));
 
@@ -96,7 +94,7 @@ int vcar::recvCanFrame() {
         return 0;
     }
 
-    if (nbytes < sizeof(struct can_frame)) {
+    if (nbytes < sizeof(struct can_frame) - sizeof(in_frame.getDataAsUint64)) {
         Log("Incomplete can frame received");
         return 0;
     }
@@ -105,13 +103,9 @@ int vcar::recvCanFrame() {
     can_id << std::hex << static_cast<int>(in_frame.can_id);
 
     std::cout << "can_id: " << can_id.str() << std::endl;
-    std::cout << "data: ";
-    for (int i = 0; i < in_frame.can_dlc; i++) {
-        std::cout << std::hex << static_cast<int>(in_frame.data[i]);
-    }
-    std::cout << std::endl;
+    std::cout << "data: " << std::hex << in_frame.getDataAsUint64(&in_frame) << std::endl;
 
     // TODO: Parse message
 
-    return 0;
+    return 1;
 }
