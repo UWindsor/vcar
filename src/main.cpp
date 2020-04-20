@@ -37,11 +37,6 @@ void node_door_window_stop();
 int main() {
     
     std::cout << "Welcome to vCar!" << std::endl;
-    
-    std::cout << "> Wiring up the CAN BUS.." << std::endl;
-    system("modprobe vcan");
-    system("sudo ip link add dev vcar type vcan");
-    system("sudo ip link set up vcar");
 
     std::cout << "> Testing connections.." << std::endl;
     int s;
@@ -51,7 +46,7 @@ int main() {
     s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     if (s < 0) {
         // Socket connection failed
-        std::cerr << "> Test failed! Could not connect to CAN BUS" << std::endl;
+        std::cerr << "> Test failed! Could not connect to CAN BUS, Try running configure.sh" << std::endl;
         return 1;
     }
 
