@@ -7,7 +7,7 @@ Fully functional and customizable virtual car environment built for pentesters
 ## Requirements
 * linux
 * cmake >= 3.0
-* python >= 3.0
+* python
 
 ## How to use
 This project consists of two components, the web interface and the embedded code. Pull this repo to get started.
