@@ -133,23 +133,29 @@ void node_dcu_lock() {
 void node_dcu_unlock() {
     door_locked = 0;
     std::cout << "Unlocked door" << std::endl;;
+    send_post(std::string("DOOR: unlocked"));
 }
 
 void node_dcu_window_stop() {
     std::cout << "Stopped rolling window" << std::endl;;
+    send_post(std::string("DOOR: window rolling stopped"));
 }
 
 void node_dcu_window_down() {
     std::cout << "Rolling window down..." << std::endl;;
+    send_post(std::string("DOOR: window rolling down"));
 }
 
 void node_dcu_window_up() {
     std::cout << "Rolling window up..." << std::endl;;
+    send_post(std::string("DOOR: window rolling up"));
 }
 
 void node_dcu_toggle_child_lock() {
     child_lock = !child_lock;
-    std::cout << "Child lock " << (child_lock ? "enabled" : "disabled") << std::endl;
+    std::string state = child_lock ? "enabled" : "disabled";
+    std::cout << "Child lock " << state << std::endl;
+    send_post(std::string("DOOR: child lock "+state));
 }
 
 
@@ -172,10 +178,12 @@ int cruise_control_speed = 0;
 
 void node_scu_enable_cruise_control() {
     cruise_control = 1;
-    std::cout << "Cruise control enabled" << std::endl;;
+    std::cout << "Cruise control enabled" << std::endl;
+    send_post(std::string("CRUISE CONTROL: enabled"));
 }
 
 void node_scu_disable_cruise_control() {
     cruise_control = 0;
-    std::cout << "Cruise control disabled" << std::endl;;
+    std::cout << "Cruise control disabled" << std::endl;
+    send_post(std::string("CRUISE CONTROL: disabled"));
 }
