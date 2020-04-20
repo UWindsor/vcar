@@ -3,6 +3,7 @@
     <head>
         <title>vcar web</title>
         <script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
     </head>
 
     <body>
@@ -14,7 +15,7 @@
         <button id="send_frame_btn" type="button">send</button>
         <br>
         <div style="max-height: 300px; border:1px solid black; margin: 20px; padding: 5px; overflow: hidden" id="logger">
-            
+    
         <div/>
     </body>
 </html>
@@ -30,13 +31,22 @@
                 crossDomain: true,
                 data: { frame: input },
             }).done(function(res) {
-                res = JSON.parse(res);
+               /* res = JSON.parse(res);
                 feedback = {success: res.success, exit_code: res.exit_message, input: input}
                 $("#logger").prepend("<b>"+line+") "+JSON.stringify(feedback, null, 4)+"</b><br>");
-                line++;
+                line++;*/
             }).fail(function(err) {
                 console.log(err);
             })
         })
+
+        let socket = io();
+        socket.on('connect', function() {
+            console.log('socketio connected');
+        });
+        socket.on('message', function(data) {
+             $("#logger").prepend("<b>"+line+") "+JSON.stringify(data, null, 4)+"</b><br>");
+                line++;
+        });
     });
 </script>
