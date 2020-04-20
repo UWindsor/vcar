@@ -81,8 +81,6 @@ int vcar::sendCanFrame(char* sFrame) {
         return 0;
     }
 
-    close(sock);
-
     return 1;
 }
 
@@ -105,13 +103,9 @@ int vcar::recvCanFrame() {
     can_id << std::hex << static_cast<int>(in_frame.can_id);
 
     std::cout << "can_id: " << can_id.str() << std::endl;
-    std::cout << "data: ";
-    for (int i = 0; i < in_frame.can_dlc; i++) {
-        std::cout << std::hex << static_cast<int>(in_frame.data[i]);
-    }
-    std::cout << std::endl;
+    std::cout << "data: " << std::hex << getDataAsUint64FromCanFrame(in_frame) << std::endl;
 
     // TODO: Parse message
 
-    return 0;
+    return 1;
 }
