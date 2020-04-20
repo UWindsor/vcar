@@ -1,12 +1,3 @@
-/*
-    Author: Mostapha Rammo
-    
-    use something like `cansend vcar 5A1#48656c6f` to send data onto the
-    can bus. cansend documentation is helpful.
-
-    ONLY LISTENS TO CAN FRAMES BEGINNING WITH 0x00 
-*/
-
 #include <iostream>
 #include <sstream>
 #include <vcar.h>
@@ -17,22 +8,31 @@
 #include <string.h>
 #include <string>
 
-#define NODE_DOOR 0x001
-#define NODE_STEERING_WHEEL 0x002
+#define NODE_DOOR_CONTROL_UNIT 0x001
+#define NODE_SPEED_CONTROL_UNIT 0x002
 
-#define ACTION_DOOR_UNLOCK 0xAABBCCDDEEFF1122
-#define ACTION_DOOR_LOCK 0x1234567890123456
-#define ACTION_DOOR_WINDOW_DOWN 0x000000000002
-#define ACTION_DOOR_WINDOW_UP 0x000000000003
-#define ACTION_DOOR_WINDOW_STOP 0x000000000004
+// Move these to door control unit
+#define ACTION_DOOR_UNLOCK                  0x0000000000000000
+#define ACTION_DOOR_LOCK                    0x0000000000000001
+#define ACTION_DOOR_WINDOW_DOWN             0x0000000000000002
+#define ACTION_DOOR_WINDOW_UP               0x0000000000000003
+#define ACTION_DOOR_WINDOW_STOP             0x0000000000000004
+#define ACTION_DOOR_TOGGLE_CHILD_LOCK       0x0000000000000005
+void door_control_unit(can_frame);
+void node_dcu_lock();
+void node_dcu_unlock();
+void node_dcu_window_up();
+void node_dcu_window_down();
+void node_dcu_window_up();
+void node_dcu_window_stop();
+void node_dcu_toggle_child_lock();
 
-void door_controller(can_frame);
-void node_door_lock();
-void node_door_unlock();
-void node_door_window_up();
-void node_door_window_down();
-void node_door_window_up();
-void node_door_window_stop();
+// Move these to speed control unit
+#define ACTION_SCU_DISABLE_CRUISE_CONTROL   0x0000000000000000
+#define ACTION_SCU_ENABLE_CRUISE_CONTROL    0x0000000000000001
+void speed_control_unit(can_frame);
+void node_scu_enable_cruise_control();
+void node_scu_disable_cruise_control();
 
 void send_post(std::string message) {
     std::stringstream cmd;
@@ -87,59 +87,95 @@ int main() {
 
         std::cout << "ID: " << can_id.str() << std::endl;
         std::cout << "DATA: " << std::hex << getDataAsUint64FromCanFrame(frame) << std::endl;
-        
-        /*
-             Check if frame belongs to self and work accordingly
-        */
-        if (frame.can_id == 0) {
-            /*
-            std::stringstream cmd;
-            cmd << "cansend vcar 5A1#";
-            for (int i = 0; i < frame.can_dlc; i++)
-                cmd << std::hex << static_cast<int>(frame.data[i]);
-            */
-            std::cout << "This frame belongs to me!" << std::endl;
-            //system(cmd.str().c_str());
-        } else if (frame.can_id == NODE_DOOR) {
-            std::cout << "This frame belongs to the door" << std::endl;
-            door_controller(frame);
+
+        switch (frame.can_id) {
+            case NODE_DOOR_CONTROL_UNIT:    std::cout << "Forwarding frame to door control unit (DCU)..." << std::endl;
+                                            door_control_unit(frame);
+                                            break;
+            case NODE_SPEED_CONTROL_UNIT:   std::cout << "Forwarding frame to speed control unit (SCU)..." << std::endl;
+                                            speed_control_unit(frame);
+                                            break;
+            default:                        std::cout << "No ECU's responded to frame" << std::endl;
+                                            break;
         }
     }
 
     return 0;
 }
 
-// Move to a separate class in nodes directory
-void door_controller(can_frame frame) {
+/*
+    DOOR CONTROL UNIT
+
+    Put these in the door_control_unit file
+*/
+void door_control_unit(can_frame frame) {
     switch(getDataAsUint64FromCanFrame(frame)) {
-        case ACTION_DOOR_LOCK : node_door_lock(); break;
-        case ACTION_DOOR_UNLOCK : node_door_unlock(); break;
-        case ACTION_DOOR_WINDOW_UP : node_door_window_up(); break;
-        case ACTION_DOOR_WINDOW_DOWN : node_door_window_down(); break;
-        case ACTION_DOOR_WINDOW_STOP : node_door_window_stop(); break;
+        case ACTION_DOOR_LOCK : node_dcu_lock(); break;
+        case ACTION_DOOR_UNLOCK : node_dcu_unlock(); break;
+        case ACTION_DOOR_WINDOW_UP : node_dcu_window_up(); break;
+        case ACTION_DOOR_WINDOW_DOWN : node_dcu_window_down(); break;
+        case ACTION_DOOR_WINDOW_STOP : node_dcu_window_stop(); break;
+        case ACTION_DOOR_TOGGLE_CHILD_LOCK : node_dcu_toggle_child_lock(); break;
         default: break;
     }
 }
 
+int door_locked = 1;
+int windows_locked = 1;
+int child_lock = 0;
 
-// Put these in the door controller or a door.h header?
-void node_door_lock() {
-    std::cout << "Locked door" << std::endl;
+void node_dcu_lock() {
+    door_locked = 1;
+    std::cout << "Locked door" << std::endl;;
     send_post(std::string("DOOR: locked"));
 }
 
-void node_door_unlock() {
-    std::cout << "Unlocked door" << std::endl;
+void node_dcu_unlock() {
+    door_locked = 0;
+    std::cout << "Unlocked door" << std::endl;;
 }
 
-void node_door_window_stop() {
-    std::cout << "Stopped rolling window" << std::endl;
+void node_dcu_window_stop() {
+    std::cout << "Stopped rolling window" << std::endl;;
 }
 
-void node_door_window_down() {
-    std::cout << "Rolling window down..." << std::endl;
+void node_dcu_window_down() {
+    std::cout << "Rolling window down..." << std::endl;;
 }
 
-void node_door_window_up() {
-    std::cout << "Rolling window up..." << std::endl;
+void node_dcu_window_up() {
+    std::cout << "Rolling window up..." << std::endl;;
+}
+
+void node_dcu_toggle_child_lock() {
+    child_lock = !child_lock;
+    std::cout << "Child lock " << (child_lock ? "enabled" : "disabled") << std::endl;
+}
+
+
+
+/*
+    SPEED CONTROL UNIT
+
+    Put these in the speed_control_unit file
+*/
+void speed_control_unit(can_frame frame) {
+    switch(getDataAsUint64FromCanFrame(frame)) {
+        case ACTION_SCU_ENABLE_CRUISE_CONTROL : node_scu_enable_cruise_control(); break;
+        case ACTION_SCU_DISABLE_CRUISE_CONTROL : node_scu_disable_cruise_control(); break;
+        default: std::cout << "No action was taken" << std::endl; break;
+    }
+}
+
+int cruise_control = 0;
+int cruise_control_speed = 0;
+
+void node_scu_enable_cruise_control() {
+    cruise_control = 1;
+    std::cout << "Cruise control enabled" << std::endl;;
+}
+
+void node_scu_disable_cruise_control() {
+    cruise_control = 0;
+    std::cout << "Cruise control disabled" << std::endl;;
 }
