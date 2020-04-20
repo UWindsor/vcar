@@ -29,7 +29,7 @@ The `configure.sh` file will start up the virtual can network on your machine, t
 Open up a new terminal and change to the root directory then run the following commands:
 ```
 cd web
-python3 main.py
+python main.py
 ```
 You may need to install required dependencies as prompted by the python interpreter.
 
