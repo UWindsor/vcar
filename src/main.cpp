@@ -64,7 +64,7 @@ int main() {
     bind(s, (struct sockaddr *)&addr, sizeof(addr));
 
     std::cout << "> Listening on BUS.." << std::endl;
-    struct can_frame frame;
+    struct can_frame frame {};
     while (1) {
         int nbytes = read(s, &frame, sizeof(struct can_frame));
 
@@ -85,11 +85,7 @@ int main() {
         can_id << std::hex << static_cast<int>(frame.can_id);
 
         std::cout << "ID: " << can_id.str() << std::endl;
-        std::cout << "DATA: ";
-        for (int i = 0; i < frame.can_dlc; i++) {
-            std::cout << std::hex << static_cast<int>(frame.data[i]);
-        }
-        std::cout << std::endl;
+        std::cout << "DATA: " << std::hex << getDataAsUint64FromCanFrame(frame) << std::endl;
         
         /*
              Check if frame belongs to self and work accordingly
@@ -114,12 +110,13 @@ int main() {
 
 // Move to a separate class in nodes directory
 void door_controller(can_frame frame) {
-    switch(frame.data) {
+    switch(getDataAsUint64FromCanFrame(frame)) {
         case ACTION_DOOR_LOCK : node_door_lock(); break;
         case ACTION_DOOR_UNLOCK : node_door_unlock(); break;
         case ACTION_DOOR_WINDOW_UP : node_door_window_up(); break;
         case ACTION_DOOR_WINDOW_DOWN : node_door_window_down(); break;
         case ACTION_DOOR_WINDOW_STOP : node_door_window_stop(); break;
+        default: break;
     }
 }
 
