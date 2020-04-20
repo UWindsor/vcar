@@ -1,4 +1,4 @@
-![vCar logo][https://github.com/rammom/vcar/blob/master/logo.png]
+<p align="center"><img src="./logo.png"/></p>
 ---
 
 # vCar
