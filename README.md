@@ -1,4 +1,4 @@
-<p align="center"><img src="./logo.png"/></p>
+<p align="center"><img src="./logo.png" width="75%"/></p>
 
 # vCar
 Virtual CAN bus emulator
