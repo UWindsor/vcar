@@ -13,3 +13,4 @@ build
 cmake-build-debug
 .idea
 web/venv/*
+**/*.swp
