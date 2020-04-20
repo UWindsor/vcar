@@ -34,6 +34,12 @@ void node_door_window_down();
 void node_door_window_up();
 void node_door_window_stop();
 
+void send_post(std::string message) {
+    std::stringstream cmd;
+    cmd << "curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' -d 'message=" << message << "' http://localhost:5000/hook >/dev/null 2>&1";
+    system(cmd.str().c_str());
+}
+
 int main() {
     
     std::cout << "Welcome to vCar!" << std::endl;
@@ -118,21 +124,22 @@ void door_controller(can_frame frame) {
 
 // Put these in the door controller or a door.h header?
 void node_door_lock() {
-    std::cout << "Locked door" << std::endl;;
+    std::cout << "Locked door" << std::endl;
+    send_post(std::string("DOOR: locked"));
 }
 
 void node_door_unlock() {
-    std::cout << "Unlocked door" << std::endl;;
+    std::cout << "Unlocked door" << std::endl;
 }
 
 void node_door_window_stop() {
-    std::cout << "Stopped rolling window" << std::endl;;
+    std::cout << "Stopped rolling window" << std::endl;
 }
 
 void node_door_window_down() {
-    std::cout << "Rolling window down..." << std::endl;;
+    std::cout << "Rolling window down..." << std::endl;
 }
 
 void node_door_window_up() {
-    std::cout << "Rolling window up..." << std::endl;;
+    std::cout << "Rolling window up..." << std::endl;
 }
