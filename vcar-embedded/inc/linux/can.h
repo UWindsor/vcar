@@ -16,7 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of Volkswagen nor the names of its contributors
+ * 3. Neither the name of Volkswagen nor the thisnames of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,6 +47,8 @@
 
 #include <linux/types.h>
 #include <linux/socket.h>
+
+#include <stdint.h>
 
 /* controller area network (CAN) kernel definitions */
 
@@ -102,6 +104,7 @@ struct can_frame {
 	__u8    can_dlc; /* frame payload length in byte (0 .. CAN_MAX_DLEN) */
 	__u8    data[CAN_MAX_DLEN] __attribute__((aligned(8)));
 };
+uint64_t getDataAsUint64FromCanFrame(struct can_frame cf);
 
 /*
  * defined bits for canfd_frame.flags
