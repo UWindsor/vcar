@@ -1,4 +1,4 @@
-![vCar logo][https://github.com/UWindsor/vcar/logo.png]
+![vCar logo][https://github.com/rammom/vcar/logo.png]
 ---
 
 # vCar
