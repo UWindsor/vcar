@@ -6,6 +6,7 @@
 #include <ctime>
 #include <future>
 #include <list>
+#include <map>
 #include <mutex>
 
 #include <net/if.h>
@@ -35,6 +36,8 @@ class vcar {
     std::list<std::future<int> > incoming_connections;
 
     std::future<void> vcar_future;
+
+    std::map<uint32_t, std::map<uint64_t, void (*)()> > node_actions;
 
     void start();
 
