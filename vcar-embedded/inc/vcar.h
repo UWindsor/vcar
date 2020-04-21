@@ -52,6 +52,8 @@ public:
     vcar(vcar &&) = default;
     vcar& operator=(vcar &&) = default;
 
+    void registerNodeAction(uint32_t node_id, uint64_t action_id, void (*node_action)());
+
     int sendCanFrame(char* sFrame);
     int recvCanFrame();
 };
