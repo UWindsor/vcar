@@ -40,7 +40,6 @@ void send_post(std::string message) {
 }
 
 int main() {
-    
     std::cout << "Welcome to vCar!" << std::endl;
 
     std::cout << "> Testing connections.." << std::endl;
