@@ -73,6 +73,14 @@ void vcar::start() {
     }
 }
 
+void vcar::registerNodeAction(uint32_t node_id, uint64_t action_id, void (*node_action)()) {
+    if (node_actions.find(node_id) == node_actions.end()) {
+        node_actions[node_id] = std::map<uint64_t, void (*)()>();
+    }
+
+    node_actions[node_id][action_id] = node_action;
+}
+
 int vcar::sendCanFrame(char* sFrame) {
     required_mtu = parse_canframe(sFrame, &frame);
 
@@ -99,13 +107,17 @@ int vcar::recvCanFrame() {
         return 0;
     }
 
-    std::stringstream can_id;
-    can_id << std::hex << static_cast<int>(in_frame.can_id);
+    uint32_t node_id = static_cast<uint32_t>(in_frame.can_id);
+    uint64_t action_id = getDataAsUint64FromCanFrame(in_frame);
 
-    std::cout << "can_id: " << can_id.str() << std::endl;
-    std::cout << "data: " << std::hex << getDataAsUint64FromCanFrame(in_frame) << std::endl;
+    std::cout << "can_id: " << std::hex << node_id << std::endl;
+    std::cout << "data: " << std::hex << action_id << std::endl;
 
-    // TODO: Parse message
+    if (node_actions.find(node_id) == node_actions.end() || node_actions[node_id].find(action_id) == node_actions[node_id].end()) {
+        return 0;
+    }
+
+    node_actions[node_id][action_id]();  // Call node action if it exists
 
     return 1;
 }

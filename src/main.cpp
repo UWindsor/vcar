@@ -23,7 +23,6 @@ void node_dcu_lock();
 void node_dcu_unlock();
 void node_dcu_window_up();
 void node_dcu_window_down();
-void node_dcu_window_up();
 void node_dcu_window_stop();
 void node_dcu_toggle_child_lock();
 
@@ -41,7 +40,6 @@ void send_post(std::string message) {
 }
 
 int main() {
-    
     std::cout << "Welcome to vCar!" << std::endl;
 
     std::cout << "> Testing connections.." << std::endl;

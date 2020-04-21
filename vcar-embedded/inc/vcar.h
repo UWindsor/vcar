@@ -6,6 +6,7 @@
 #include <ctime>
 #include <future>
 #include <list>
+#include <map>
 #include <mutex>
 
 #include <net/if.h>
@@ -36,6 +37,8 @@ class vcar {
 
     std::future<void> vcar_future;
 
+    std::map<uint32_t, std::map<uint64_t, void (*)()> > node_actions;
+
     void start();
 
 public:
@@ -48,6 +51,8 @@ public:
     // Default move
     vcar(vcar &&) = default;
     vcar& operator=(vcar &&) = default;
+
+    void registerNodeAction(uint32_t node_id, uint64_t action_id, void (*node_action)());
 
     int sendCanFrame(char* sFrame);
     int recvCanFrame();
