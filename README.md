@@ -16,7 +16,6 @@ This project consists of two components, the web interface and the embedded code
 Make sure you're in the root directory and run the following commands:
 ```
 sudo ./configure.sh
-cd src
 mkdir build
 cd build
 cmake ..
