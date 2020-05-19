@@ -25,6 +25,8 @@ make all
 ```
 The `configure.sh` file will start up the virtual can network on your machine, the rest will compile and run the main vCar component
 
+You can interact with the embedded CAN server with `cansend vcar 001#0000000000000001` for example.
+
 ### 2. Launch the web application
 Open up a new terminal and change to the root directory then run the following commands:
 ```
