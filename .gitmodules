@@ -1,0 +1,4 @@
+[submodule "vcar-web"]
+	path = vcar-web
+	url = https://github.com/UWindsor/vcar-web.git
+	branch = python-master
