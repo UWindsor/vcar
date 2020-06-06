@@ -11,13 +11,14 @@
 #define NODE_DOOR_CONTROL_UNIT 0x001
 #define NODE_SPEED_CONTROL_UNIT 0x002
 
-// Move these to door control unit
+// TODO: Move these to door control unit
 #define ACTION_DOOR_UNLOCK                  0x0000000000000000
 #define ACTION_DOOR_LOCK                    0x0000000000000001
 #define ACTION_DOOR_WINDOW_DOWN             0x0000000000000002
 #define ACTION_DOOR_WINDOW_UP               0x0000000000000003
 #define ACTION_DOOR_WINDOW_STOP             0x0000000000000004
 #define ACTION_DOOR_TOGGLE_CHILD_LOCK       0x0000000000000005
+
 void node_dcu_lock();
 void node_dcu_unlock();
 void node_dcu_window_up();
@@ -25,9 +26,10 @@ void node_dcu_window_down();
 void node_dcu_window_stop();
 void node_dcu_toggle_child_lock();
 
-// Move these to speed control unit
+// TODO: Move these to speed control unit
 #define ACTION_SCU_DISABLE_CRUISE_CONTROL   0x0000000000000000
 #define ACTION_SCU_ENABLE_CRUISE_CONTROL    0x0000000000000001
+
 void node_scu_enable_cruise_control();
 void node_scu_disable_cruise_control();
 
