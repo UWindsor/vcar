@@ -24,13 +24,12 @@ make all
 ```
 The `configure.sh` file will start up the virtual can network on your machine, the rest will compile and run the main vCar component
 
+You can interact with the embedded CAN server with `cansend vcar 001#0000000000000001` for example.
+
 ### 2. Launch the web application
-Open up a new terminal and change to the root directory then run the following commands:
-```
-cd web
-python main.py
-```
-You may need to install required dependencies as prompted by the python interpreter.
+Clone the submodule and follow instructions from the vcar-web README.
+
+To clone use: `git submodule update --init --recursive`
 
 ### 3. Open up the web app
 Once you have both components running, go to `http://localhost:5000` in your browser. Here you can start sending CAN frames to the car.
