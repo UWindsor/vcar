@@ -1,7 +1,7 @@
 #include <cstring>
 #include <iostream>
 #include <logger.h>
-#include <sstream>
+#include <stdexcept>
 #include <unistd.h>
 #include <vcar.h>
 
@@ -17,7 +17,7 @@ int canGatewayCheckMTU(struct ifreq* ifr) {
 vcar::vcar() {
     if ((sock = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         Log("Couldn't create a socket to send frame to node.");
-        // TODO: Throw error
+        throw std::runtime_error("Couldn't create a socket to send frame to node.");
     }
 
     // Copy CAN interface name to ifr_name m/nb
@@ -27,7 +27,7 @@ vcar::vcar() {
 
     if (!ifr.ifr_ifindex) {
         Log("Couldn't convert ifr_name to index.");
-        // TODO: Throw error
+        throw std::runtime_error("Couldn't convert ifr_name to index.");
     }
 
     addr.can_family = AF_CAN;
@@ -36,22 +36,22 @@ vcar::vcar() {
     // Frame size = CAN netdevice space
     if (ioctl(sock, SIOCGIFMTU, &ifr) < 0) {
         Log("Couldn't fit can_frame in netdevice.");
-        // TODO: Throw error
+        throw std::runtime_error("Couldn't fit can_frame in netdevice.");
     }
 
     // Frame is MTU but interface does not support it
     if (!canGatewayCheckMTU(&ifr)) {
-        // TODO: Throw error
+        throw std::runtime_error("Frame is MTU but interface does not support it");
     }
 
     if (setsockopt(sock, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &enable_canfd, sizeof(enable_canfd))) {
         Log("Couldn't enable CAN FD support.");
-        // TODO: Throw error
+        throw std::runtime_error("Couldn't enable CAN FD support.");
     }
 
     if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         Log("Couldn't bind to the interface address.");
-        // TODO: Throw error
+        throw std::runtime_error("Couldn't bind to the interface address.");
     }
 
     vcar_future = std::async(std::launch::async, &vcar::start, this);
