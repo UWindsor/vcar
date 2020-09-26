@@ -1,5 +1,8 @@
+// TODO: Get the token from REST server to authorize vehicle actions because SQL is a hot garbage
+
 #include <iostream>
 #include <sstream>
+#include <unistd.h>
 #include <vcar.h>
 
 #include <linux/can.h>
@@ -37,6 +40,12 @@ void send_post(std::string message) {
     std::stringstream cmd;
     cmd << "curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' -d 'message=" << message << "' http://localhost:5000/hook >/dev/null 2>&1";
     system(cmd.str().c_str());
+}
+
+
+
+void registerNewVehicle() {
+
 }
 
 int main() {
