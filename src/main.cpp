@@ -1,3 +1,5 @@
+// TODO: Get the token from REST server to authorize vehicle actions because SQL is a hot garbage
+
 #include <iostream>
 #include <fcntl.h>
 #include <fstream>
@@ -41,6 +43,7 @@ void send_post(std::string message) {
     system(cmd.str().c_str());
 }
 
+/// Everything above here needs to be redone
 
 
 
