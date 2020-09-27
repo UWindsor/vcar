@@ -1,12 +1,14 @@
 #include <iostream>
+#include <fcntl.h>
+#include <fstream>
 #include <sstream>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <vcar.h>
 
 #include <linux/can.h>
-
-#include <unistd.h>
-#include <string.h>
-#include <string>
 
 #define NODE_DOOR_CONTROL_UNIT 0x001
 #define NODE_SPEED_CONTROL_UNIT 0x002
@@ -39,6 +41,15 @@ void send_post(std::string message) {
     system(cmd.str().c_str());
 }
 
+
+
+
+
+#define to_rest_fifo "/tmp/emb-rest"
+#define from_rest_fifo "/tmp/rest-emb"
+
+bool running = true;
+
 int main() {
     vcar vc;
 
@@ -54,7 +65,29 @@ int main() {
     vc.registerNodeAction(NODE_SPEED_CONTROL_UNIT, ACTION_SCU_DISABLE_CRUISE_CONTROL, node_scu_disable_cruise_control);
     vc.registerNodeAction(NODE_SPEED_CONTROL_UNIT, ACTION_SCU_ENABLE_CRUISE_CONTROL, node_scu_enable_cruise_control);
 
-    while (true) {}
+    // Setup REST communication pipes
+    mkfifo(to_rest_fifo, 0666);
+    mkfifo(from_rest_fifo, 0666);
+
+    // REST communication parameters
+    int fd;
+    char rest_req[500];
+    std::string rest_res;
+
+    while (running) {
+        fd = open(from_rest_fifo, O_RDONLY);
+        read(fd, rest_req, 500);
+        close(fd);
+
+        std::cout << "REST request: " << rest_req << std::endl;
+
+        // TODO: Execute request and generate response
+        rest_res = "SAMPLE RESPONSE";
+
+        fd = open(to_rest_fifo, O_WRONLY);
+        write(fd, rest_res.c_str(), rest_res.size() + 1);
+        close(fd);
+    }
 
     return 0;
 }
