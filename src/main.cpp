@@ -1,5 +1,6 @@
 // TODO: Get the token from REST server to authorize vehicle actions because SQL is a hot garbage
 
+#include <cstdlib>
 #include <iostream>
 #include <fcntl.h>
 #include <fstream>
@@ -54,6 +55,7 @@ void send_post(std::string message) {
 bool running = true;
 
 int main() {
+    /*
     vcar vc;
 
     // Register door control actions
@@ -67,6 +69,7 @@ int main() {
     // Register speed control actions
     vc.registerNodeAction(NODE_SPEED_CONTROL_UNIT, ACTION_SCU_DISABLE_CRUISE_CONTROL, node_scu_disable_cruise_control);
     vc.registerNodeAction(NODE_SPEED_CONTROL_UNIT, ACTION_SCU_ENABLE_CRUISE_CONTROL, node_scu_enable_cruise_control);
+     */
 
     // Setup REST communication pipes
     mkfifo(to_rest_fifo, 0666);
