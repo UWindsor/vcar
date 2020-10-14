@@ -23,14 +23,12 @@ extern "C" {
 #define VCAR_NAME "vcar"
 
 class vcar {
-    bool running = true;
-
-    int sock;
+    int sock{};
     struct ifreq ifr {};
     struct sockaddr_can addr {};
     struct canfd_frame frame {};
     int enable_canfd = 1;
-    int required_mtu;
+    int required_mtu{};
 
     std::mutex incoming_connections_mutex;
     std::list<std::future<int> > incoming_connections;
@@ -39,18 +37,23 @@ class vcar {
 
     std::map<uint32_t, std::map<uint64_t, void (*)()> > node_actions;
 
-    void start();
+    bool running = true;
+    void run();
 
 public:
-    vcar();
+    explicit vcar(bool halted = true);
+    virtual ~vcar() = default;
 
     // Disable copying
     vcar(vcar const&) = delete;
     vcar& operator=(vcar const&) = delete;
 
     // Default move
-    vcar(vcar &&) = default;
-    vcar& operator=(vcar &&) = default;
+    vcar(vcar &&) = delete;
+    vcar& operator=(vcar &&) = delete;
+
+    bool launch();
+    void halt();
 
     void registerNodeAction(uint32_t node_id, uint64_t action_id, void (*node_action)());
 

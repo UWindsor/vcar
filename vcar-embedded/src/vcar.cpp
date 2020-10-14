@@ -14,7 +14,17 @@ int canGatewayCheckMTU(struct ifreq* ifr) {
     return 1;
 }
 
-vcar::vcar() {
+vcar::vcar(bool halted) {
+    if (!halted) {
+        launch();
+    }
+}
+
+bool vcar::launch() {
+    if (running) {
+        return false;
+    }
+
     if ((sock = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
         Log("Couldn't create a socket to send frame to node.");
         throw std::runtime_error("Couldn't create a socket to send frame to node.");
@@ -54,10 +64,16 @@ vcar::vcar() {
         throw std::runtime_error("Couldn't bind to the interface address.");
     }
 
-    vcar_future = std::async(std::launch::async, &vcar::start, this);
+    vcar_future = std::async(std::launch::async, &vcar::run, this);
+
+    return true;
 }
 
-void vcar::start() {
+void vcar::halt() {
+    running = false;
+}
+
+void vcar::run() {
     while (running) {
         /// Incoming communications
 
