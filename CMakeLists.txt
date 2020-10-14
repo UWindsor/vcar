@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(vcar-server)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -l restbed")
 
 file(GLOB CXX_EXEC "src/*.cpp")
 

@@ -2,13 +2,9 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <fcntl.h>
-#include <fstream>
-#include <sstream>
+#include <memory>
+#include <restbed>
 #include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <vcar.h>
 
 #include <linux/can.h>
@@ -48,15 +44,11 @@ void send_post(std::string message) {
 
 
 
-
-#define to_rest_fifo "/tmp/emb-rest"
-#define from_rest_fifo "/tmp/rest-emb"
-
 bool running = true;
 
 int main() {
-    /*
     vcar vc;
+    //vc.launch();
 
     // Register door control actions
     vc.registerNodeAction(NODE_DOOR_CONTROL_UNIT, ACTION_DOOR_UNLOCK, node_dcu_unlock);
@@ -69,30 +61,27 @@ int main() {
     // Register speed control actions
     vc.registerNodeAction(NODE_SPEED_CONTROL_UNIT, ACTION_SCU_DISABLE_CRUISE_CONTROL, node_scu_disable_cruise_control);
     vc.registerNodeAction(NODE_SPEED_CONTROL_UNIT, ACTION_SCU_ENABLE_CRUISE_CONTROL, node_scu_enable_cruise_control);
-     */
 
-    // Setup REST communication pipes
-    mkfifo(to_rest_fifo, 0666);
-    mkfifo(from_rest_fifo, 0666);
+    /// REST communication setup
+    auto register_user = std::make_shared<restbed::Resource>();
+    auto register_vehicle = std::make_shared<restbed::Resource>();
+    auto vehicle = std::make_shared<restbed::Resource>();
 
-    // REST communication parameters
-    int fd;
-    char rest_req[500];
-    std::string rest_res;
+    register_user->set_path("/embedded/v1/register");
+    register_vehicle->set_path("/embedded/v1/vehicles");
+    vehicle->set_path("/embedded/v1/vehicles/{vid: ([^\\s]+)}");
+
+    auto settings = std::make_shared<restbed::Settings>();
+    settings->set_port(7998);
+    settings->set_default_header("Connection", "close");
+
+    restbed::Service service;
+    service.publish(register_vehicle);
+    service.publish(register_user);
+    service.publish(vehicle);
+    service.start(settings);
 
     while (running) {
-        fd = open(from_rest_fifo, O_RDONLY);
-        read(fd, rest_req, 500);
-        close(fd);
-
-        std::cout << "REST request: " << rest_req << std::endl;
-
-        // TODO: Execute request and generate response
-        rest_res = "SAMPLE RESPONSE";
-
-        fd = open(to_rest_fifo, O_WRONLY);
-        write(fd, rest_res.c_str(), rest_res.size() + 1);
-        close(fd);
     }
 
     return 0;
