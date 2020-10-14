@@ -44,12 +44,23 @@ void send_post(std::string message) {
 
 
 
+
+
+// TODO: REQUEST FUNCTIONS
+
+void PostRegisterUser(const std::shared_ptr<restbed::Session> session);
+void PostRegisterVehicle(const std::shared_ptr<restbed::Session> session);
+void GetVehicle(const std::shared_ptr<restbed::Session> session);
+void UpdateVehicle(const std::shared_ptr<restbed::Session> session);
+void DeleteVehicle(const std::shared_ptr<restbed::Session> session);
+
 bool running = true;
 
 int main() {
     vcar vc;
     //vc.launch();
 
+    // TODO: Registering actions should be done through components or through REST API
     // Register door control actions
     vc.registerNodeAction(NODE_DOOR_CONTROL_UNIT, ACTION_DOOR_UNLOCK, node_dcu_unlock);
     vc.registerNodeAction(NODE_DOOR_CONTROL_UNIT, ACTION_DOOR_LOCK, node_dcu_lock);
@@ -70,6 +81,12 @@ int main() {
     register_user->set_path("/embedded/v1/register");
     register_vehicle->set_path("/embedded/v1/vehicles");
     vehicle->set_path("/embedded/v1/vehicles/{vid: ([^\\s]+)}");
+
+    register_user->set_method_handler("POST", PostRegisterUser);
+    register_vehicle->set_method_handler("POST", PostRegisterVehicle);
+    vehicle->set_method_handler("GET", GetVehicle);
+    vehicle->set_method_handler("UPDATE", UpdateVehicle);
+    vehicle->set_method_handler("DELETE", DeleteVehicle);
 
     auto settings = std::make_shared<restbed::Settings>();
     settings->set_port(7998);
