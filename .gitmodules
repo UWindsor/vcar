@@ -2,3 +2,6 @@
 	path = vcar-web
 	url = https://github.com/UWindsor/vcar-web.git
 	branch = python-master
+[submodule "submodules/rapidjson"]
+	path = submodules/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
