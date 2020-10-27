@@ -97,11 +97,16 @@ void PostVehicle(std::shared_ptr<restbed::Session> session) {
         std::stringstream vehicle_ss;
         vehicle_ss << body.data() << std::flush;
         std::string vjson_str = vehicle_ss.str();
-        vjson_str.erase(std::remove(vjson_str.begin(), vjson_str.end(), '\\'), vjson_str.end());
+        vjson_str.erase(std::remove(vjson_str.begin(), vjson_str.end(), '\\'), vjson_str.end());  // Erase slashes
+
+        if (*vjson_str.begin() == '\"' && *(vjson_str.end() - 1) == '\"') {  // Erase surrounding quotes
+            vjson_str = vjson_str.substr(1, vjson_str.size() - 2);
+        }
 
         // Parse data JSON
         Document vehicle_json;
         vehicle_json.Parse(vjson_str.c_str());
+        std::cout << vjson_str.c_str() << std::endl;
 
         if (vehicle_json.HasParseError()) {
             throw std::runtime_error("Error parsing user JSON");
