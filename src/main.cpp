@@ -18,6 +18,9 @@ void GetVehicle(std::shared_ptr<restbed::Session> session);
 void UpdateVehicle(std::shared_ptr<restbed::Session> session);
 void DeleteVehicle(std::shared_ptr<restbed::Session> session);
 
+// JSON helper functions
+rapidjson::Value vcarToJSON(std::string vid);
+void cleanJSONString(std::string& filthy_json);
 std::string getStringFromJSON(rapidjson::Value const& doc);
 void parseJSONFromFile(std::string file_name, rapidjson::Document& doc);
 void saveJSONToFile(std::string file_name, rapidjson::Value& doc);
@@ -25,12 +28,9 @@ void saveJSONToFile(std::string file_name, rapidjson::Value& doc);
 rapidjson::Document vids;
 bool running = true;
 bool default_halted = true;
-std::map<std::string, vcar> vehicles;
+std::map<std::string, vcar> vehicles {};
 
 int main() {
-    vehicles.emplace("test", default_halted);
-    //vehicles["test"].launch();
-
     // Load vid files JSON
     parseJSONFromFile(VID_JSON_FILE, vids);
 
@@ -97,23 +97,20 @@ void PostVehicle(std::shared_ptr<restbed::Session> session) {
         std::stringstream vehicle_ss;
         vehicle_ss << body.data() << std::flush;
         std::string vjson_str = vehicle_ss.str();
-        vjson_str.erase(std::remove(vjson_str.begin(), vjson_str.end(), '\\'), vjson_str.end());  // Erase slashes
-
-        if (*vjson_str.begin() == '\"' && *(vjson_str.end() - 1) == '\"') {  // Erase surrounding quotes
-            vjson_str = vjson_str.substr(1, vjson_str.size() - 2);
-        }
+        cleanJSONString(vjson_str);
 
         // Parse data JSON
         Document vehicle_json;
         vehicle_json.Parse(vjson_str.c_str());
-        std::cout << vjson_str.c_str() << std::endl;
+        std::cout << "POST vehicle: " << vjson_str.c_str() << std::endl;
 
         if (vehicle_json.HasParseError()) {
-            throw std::runtime_error("Error parsing user JSON");
+            throw std::runtime_error("Error parsing vehicle JSON");
         }
 
         std::string email = vehicle_json["email"].GetString();
         std::string vid = vehicle_json["vid"].GetString();
+        std::string vtype = vehicle_json["vtype"].GetString();
 
         // New email
         if (!vids.HasMember(email.c_str())) {
@@ -126,15 +123,20 @@ void PostVehicle(std::shared_ptr<restbed::Session> session) {
             return;
         }
 
-        // Create vid entry
-        vids[email.c_str()].GetArray().PushBack(Value(vid.c_str(), vids.GetAllocator()), vids.GetAllocator());
 
         // Create car
         if (vehicles.find(vid) == vehicles.end()) {
-            vehicles.emplace(vid, default_halted);
+            vehicles.emplace(std::piecewise_construct, std::forward_as_tuple(vid), std::forward_as_tuple(default_halted, vtype));
+        }
+        else {
+            std::cout << getStringFromJSON(vcarToJSON(vid)) << std::endl;
+            session->close(restbed::BAD_REQUEST);
         }
 
-        saveJSONToFile(VID_JSON_FILE, vids);
+        // Create vid entry
+        vids[email.c_str()].GetArray().PushBack(vcarToJSON(vid), vids.GetAllocator());
+
+        //saveJSONToFile(VID_JSON_FILE, vids);
 
         session->close( restbed::CREATED, "New vehicle created");
     });
@@ -146,20 +148,15 @@ void GetVehicle(const std::shared_ptr<restbed::Session> session) {
     const auto req = session->get_request();
     int content_length = req->get_header("Content-Length", 0);
 
-    session->fetch(content_length, [](const std::shared_ptr<restbed::Session> session, const restbed::Bytes& body) {
-        std::stringstream vehicle_ss;
-        vehicle_ss << body.data() << std::flush;
+    std::string vid = req->get_path_parameter("vid");
 
-        Document vehicle_json;
-        vehicle_json.Parse(vehicle_ss.str().c_str());
+    if (vehicles.find(vid) == vehicles.end()) {
+        session->close(restbed::NOT_FOUND);
+    }
 
-        if (vehicle_json.HasParseError()) {
-            throw std::runtime_error("Error parsing user JSON");
-        }
+    std::string ret_json_string = getStringFromJSON(vcarToJSON(vid));
 
-        std::cout << (int)body.size() << " | " << body.data() << std::endl;
-        session->close( restbed::OK, "GET Vehicle", { { "Content-Length", "13" } } );
-    });
+    session->close( restbed::OK, ret_json_string, {{"Content-Type", "application/json"}});
 }
 
 void UpdateVehicle(const std::shared_ptr<restbed::Session> session) {
@@ -205,6 +202,29 @@ void DeleteVehicle(const std::shared_ptr<restbed::Session> session) {
     });
 }
 
+/// JSON helper functions definitions
+
+rapidjson::Value vcarToJSON(std::string vid) {
+    using namespace rapidjson;
+
+    Value car_json(kObjectType);
+
+    car_json.AddMember("vid", StringRef(vid.c_str()), vids.GetAllocator());
+    car_json.AddMember("type", StringRef(vehicles[vid].getType().c_str()), vids.GetAllocator());
+
+    // TODO: Fix the return, it is fucky
+    return car_json;
+}
+
+void cleanJSONString(std::string& filthy_json) {
+    filthy_json.erase(std::remove(filthy_json.begin(), filthy_json.end(), '\\'), filthy_json.end());  // Erase slashes
+
+    // Erase surrounding quotes
+    if (*filthy_json.begin() == '\"' && *(filthy_json.end() - 1) == '\"') {
+        filthy_json = filthy_json.substr(1, filthy_json.size() - 2);
+    }
+}
+
 std::string getStringFromJSON(rapidjson::Value const& doc) {
     rapidjson::StringBuffer buffer;
     buffer.Clear();
@@ -212,10 +232,12 @@ std::string getStringFromJSON(rapidjson::Value const& doc) {
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     doc.Accept(writer);
 
-    return std::string(buffer.GetString());
+    return std::string(strdup(buffer.GetString()));
 }
 
 void parseJSONFromFile(const std::string file_name, rapidjson::Document& doc) {
+    using namespace rapidjson;
+
     // Load vid file
     std::ifstream fs(file_name);
     fs.seekg(0, fs.end);
@@ -226,6 +248,19 @@ void parseJSONFromFile(const std::string file_name, rapidjson::Document& doc) {
     fs.read(file_content, file_length);
 
     doc.Parse(file_content);
+
+    if (doc.HasParseError()) {
+        throw std::runtime_error("Error parsing user JSON");
+    }
+    assert(doc.IsObject());
+
+    for (auto user_it = doc.GetObject().MemberBegin(); user_it != doc.GetObject().MemberEnd(); user_it++) {
+        Value user_vehicles = user_it->value.GetArray();
+        for (auto vehicle_it = user_vehicles.Begin(); vehicle_it != user_vehicles.End(); vehicle_it++) {
+            Value vehicle = vehicle_it->GetObject();
+            vehicles.emplace(std::piecewise_construct, std::forward_as_tuple(vehicle["vid"].GetString()), std::forward_as_tuple(default_halted, vehicle["type"].GetString()));
+        }
+    }
 
     delete[] file_content;
 }
