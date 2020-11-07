@@ -20,6 +20,7 @@ void DeleteVehicle(std::shared_ptr<restbed::Session> session);
 
 // JSON helper functions
 rapidjson::Value vcarToJSON(std::string vid);
+std::string vcarToJSONString(std::string vid);
 void cleanJSONString(std::string& filthy_json);
 std::string getStringFromJSON(rapidjson::Value const& doc);
 void parseJSONFromFile(std::string file_name, rapidjson::Document& doc);
@@ -129,14 +130,15 @@ void PostVehicle(std::shared_ptr<restbed::Session> session) {
             vehicles.emplace(std::piecewise_construct, std::forward_as_tuple(vid), std::forward_as_tuple(default_halted, vtype));
         }
         else {
-            std::cout << getStringFromJSON(vcarToJSON(vid)) << std::endl;
+            std::cout << vcarToJSONString(vid) << std::endl;
             session->close(restbed::BAD_REQUEST);
         }
 
         // Create vid entry
         vids[email.c_str()].GetArray().PushBack(vcarToJSON(vid), vids.GetAllocator());
+        std::cout << getStringFromJSON(vids) << std::endl;
 
-        //saveJSONToFile(VID_JSON_FILE, vids);
+        saveJSONToFile(VID_JSON_FILE, vids);
 
         session->close( restbed::CREATED, "New vehicle created");
     });
@@ -154,9 +156,7 @@ void GetVehicle(const std::shared_ptr<restbed::Session> session) {
         session->close(restbed::NOT_FOUND);
     }
 
-    std::string ret_json_string = getStringFromJSON(vcarToJSON(vid));
-
-    session->close( restbed::OK, ret_json_string, {{"Content-Type", "application/json"}});
+    session->close( restbed::OK, vcarToJSONString(vid), {{"Content-Type", "application/json"}});
 }
 
 void UpdateVehicle(const std::shared_ptr<restbed::Session> session) {
@@ -209,11 +209,21 @@ rapidjson::Value vcarToJSON(std::string vid) {
 
     Value car_json(kObjectType);
 
-    car_json.AddMember("vid", StringRef(vid.c_str()), vids.GetAllocator());
-    car_json.AddMember("type", StringRef(vehicles[vid].getType().c_str()), vids.GetAllocator());
+    car_json.AddMember("vid", Value(vid.c_str(), vids.GetAllocator()), vids.GetAllocator());
+    car_json.AddMember("type", Value(vehicles[vid].getType().c_str(), vids.GetAllocator()), vids.GetAllocator());
 
-    // TODO: Fix the return, it is fucky
     return car_json;
+}
+
+std::string vcarToJSONString(std::string vid) {
+    using namespace rapidjson;
+
+    Value car_json(kObjectType);
+
+    car_json.AddMember("vid", Value(vid.c_str(), vids.GetAllocator()), vids.GetAllocator());
+    car_json.AddMember("type", Value(vehicles[vid].getType().c_str(), vids.GetAllocator()), vids.GetAllocator());
+
+    return getStringFromJSON(car_json);
 }
 
 void cleanJSONString(std::string& filthy_json) {
@@ -232,7 +242,10 @@ std::string getStringFromJSON(rapidjson::Value const& doc) {
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     doc.Accept(writer);
 
-    return std::string(strdup(buffer.GetString()));
+    std::string ret = std::string(strdup(buffer.GetString()));
+    cleanJSONString(ret);
+
+    return ret;
 }
 
 void parseJSONFromFile(const std::string file_name, rapidjson::Document& doc) {
