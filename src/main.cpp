@@ -148,7 +148,6 @@ void GetVehicle(const std::shared_ptr<restbed::Session> session) {
     using namespace rapidjson;
 
     const auto req = session->get_request();
-    int content_length = req->get_header("Content-Length", 0);
 
     std::string vid = req->get_path_parameter("vid");
 
@@ -184,22 +183,33 @@ void DeleteVehicle(const std::shared_ptr<restbed::Session> session) {
     using namespace rapidjson;
 
     const auto req = session->get_request();
-    int content_length = req->get_header("Content-Length", 0);
 
-    session->fetch(content_length, [](const std::shared_ptr<restbed::Session> session, const restbed::Bytes& body) {
-        std::stringstream vehicle_ss;
-        vehicle_ss << body.data() << std::flush;
+    std::string vid = req->get_path_parameter("vid");
 
-        Document vehicle_json;
-        vehicle_json.Parse(vehicle_ss.str().c_str());
+    auto vit = vehicles.begin();
+    if ((vit = vehicles.find(vid)) == vehicles.end()) {
+        session->close(restbed::NOT_FOUND);
+    }
 
-        if (vehicle_json.HasParseError()) {
-            throw std::runtime_error("Error parsing user JSON");
+    std::string vehicle_to_erase = vcarToJSONString(vid);
+
+    vehicles.erase(vit);
+    for (auto user_it = vids.MemberBegin(); user_it != vids.MemberEnd(); user_it++) {
+        Value user_array = user_it->value.GetArray();
+
+        for (auto user_array_it = user_array.Begin(); user_array_it != user_array.End(); user_array_it++) {
+            // TODO: Breaks here, fix
+            std::cout << "HERE " << getStringFromJSON(*user_array_it) << std::endl;
+            Value vehicle_object = user_array_it->GetObject();
+            if (vehicle_object["vid"].GetString() == vid) {
+                user_array.Erase(user_array_it);
+            }
         }
+    }
 
-        std::cout << (int)body.size() << " | " << body.data() << std::endl;
-        session->close( restbed::OK, "DELETE Vehicle", { { "Content-Length", "13" } } );
-    });
+    saveJSONToFile(VID_JSON_FILE, vids);
+
+    session->close( restbed::OK, vehicle_to_erase, {{"Content-Type", "application/json"}});
 }
 
 /// JSON helper functions definitions
