@@ -35,6 +35,8 @@ int main() {
     // Load vid files JSON
     parseJSONFromFile(VID_JSON_FILE, vids);
 
+    std::cout << "Loaded from file: " << getStringFromJSON(vids) << std::endl;
+
     /// REST communication setup
     auto register_user = std::make_shared<restbed::Resource>();
     auto register_vehicle = std::make_shared<restbed::Resource>();
@@ -151,6 +153,8 @@ void GetVehicle(const std::shared_ptr<restbed::Session> session) {
 
     std::string vid = req->get_path_parameter("vid");
 
+    std::cout << "In vids: " << getStringFromJSON(vids) << std::endl;
+
     if (vehicles.find(vid) == vehicles.end()) {
         session->close(restbed::NOT_FOUND);
     }
@@ -186,8 +190,8 @@ void DeleteVehicle(const std::shared_ptr<restbed::Session> session) {
 
     std::string vid = req->get_path_parameter("vid");
 
-    auto vit = vehicles.begin();
-    if ((vit = vehicles.find(vid)) == vehicles.end()) {
+    auto vit = vehicles.find(vid);
+    if (vit == vehicles.end()) {
         session->close(restbed::NOT_FOUND);
     }
 
