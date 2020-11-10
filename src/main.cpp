@@ -288,14 +288,9 @@ void parseJSONFromFile(const std::string file_name, rapidjson::Document& doc) {
     assert(doc.IsObject());
 
     for (auto user_it = doc.GetObject().MemberBegin(); user_it != doc.GetObject().MemberEnd(); user_it++) {
-        std::cout << "1 " << getStringFromJSON(doc) << std::endl;;
-        Value user_vehicles = user_it->value.GetArray();
-        std::cout << getStringFromJSON(user_vehicles) << std::endl;
-        std::cout << "1 " << getStringFromJSON(doc) << std::endl;;
-        for (auto vehicle_it = user_vehicles.Begin(); vehicle_it != user_vehicles.End(); vehicle_it++) {
-            std::cout << "2 " << getStringFromJSON(doc) << std::endl;;
-            Value vehicle = vehicle_it->GetObject();
-            vehicles.emplace(std::piecewise_construct, std::forward_as_tuple(vehicle["vid"].GetString()), std::forward_as_tuple(default_halted, vehicle["type"].GetString()));
+        std::string user_email = user_it->name.GetString();
+        for (int i = 0; i < doc[user_email.c_str()].Size(); i++) {
+            vehicles.emplace(std::piecewise_construct, std::forward_as_tuple(doc[user_email.c_str()][i]["vid"].GetString()), std::forward_as_tuple(default_halted, doc[user_email.c_str()][i]["type"].GetString()));
         }
     }
 
