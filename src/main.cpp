@@ -294,8 +294,6 @@ void parseJSONFromFile(const std::string file_name, rapidjson::Document& doc) {
         }
     }
 
-    std::cout << getStringFromJSON(doc) << std::endl;;
-
     delete[] file_content;
 }
 
