@@ -14,7 +14,9 @@ int canGatewayCheckMTU(struct ifreq* ifr) {
     return 1;
 }
 
-vcar::vcar(bool halted) {
+vcar::vcar(bool halted, std::string _type) {
+    type = _type;
+
     if (!halted) {
         launch();
     }
@@ -136,4 +138,8 @@ int vcar::recvCanFrame() {
     node_actions[node_id][action_id]();  // Call node action if it exists
 
     return 1;
+}
+
+std::string vcar::getType() {
+    return type;
 }

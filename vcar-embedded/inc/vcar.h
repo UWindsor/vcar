@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <mutex>
+#include <string>
 
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -40,8 +41,12 @@ class vcar {
     bool running = true;
     void run();
 
+    /// vCar properties
+
+    std::string type;
+
 public:
-    explicit vcar(bool halted = true);
+    explicit vcar(bool halted = true, std::string _type = "");
     virtual ~vcar() = default;
 
     // Disable copying
@@ -59,6 +64,8 @@ public:
 
     int sendCanFrame(char* sFrame);
     int recvCanFrame();
+
+    std::string getType();
 };
 
 #endif
