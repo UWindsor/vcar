@@ -74,17 +74,30 @@ void PostRegisterUser(const std::shared_ptr<restbed::Session> session) {
     int content_length = req->get_header("Content-Length", 0);
 
     session->fetch(content_length, [](const std::shared_ptr<restbed::Session> session, const restbed::Bytes& body) {
+        // Clean incoming data JSON
         std::stringstream user_ss;
         user_ss << body.data() << std::flush;
+        std::string ujson_str = user_ss.str();
+        cleanJSONString(ujson_str);
 
         Document user_json;
-        user_json.Parse(user_ss.str().c_str());
+        user_json.Parse(ujson_str.c_str());
+        std::cout << "POST user: " << ujson_str.c_str() << std::endl;
 
         if (user_json.HasParseError()) {
              throw std::runtime_error("Error parsing user JSON");
         }
 
-        std::cout << (int)body.size() << " | " << body.data() << std::endl;
+        std::string email = user_json["email"].GetString();
+
+        // New email
+        if (!vids.HasMember(email.c_str())) {
+            Value vid_list(kArrayType);
+            vids.AddMember(Value(email.c_str(), vids.GetAllocator()), vid_list, vids.GetAllocator());
+        }
+
+        saveJSONToFile(VID_JSON_FILE, vids);
+
         session->close(restbed::OK, "POST Register User");
     });
 }
@@ -153,11 +166,11 @@ void GetVehicle(const std::shared_ptr<restbed::Session> session) {
 
     std::string vid = req->get_path_parameter("vid");
 
-    std::cout << "In vids: " << getStringFromJSON(vids) << std::endl;
+    std::cout << "GET vehicle: " << vid << std::endl;
+
     for (auto vit = vehicles.begin(); vit != vehicles.end(); vit++) {
         std::cout << vit->first << " ";
     }
-    std::cout << "|" << std::endl;
 
     if (vehicles.find(vid) == vehicles.end()) {
         session->close(restbed::NOT_FOUND);
